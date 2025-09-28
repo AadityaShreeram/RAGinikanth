@@ -129,6 +129,7 @@ app.post("/ask", async (req, res) => {
       });
     }
 
+
     // Step 2: Search vector database
     const relevantDocs = await searchVectorDB(queryEmbedding, 8); 
     console.log(`Found ${relevantDocs.length} relevant documents`);
