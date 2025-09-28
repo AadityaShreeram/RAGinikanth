@@ -11,18 +11,16 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Initialize Pinecone + Cohere
 const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
 const index = pinecone.index("raginikanth-index");
 const cohere = new CohereClient({ token: process.env.COHERE_API_KEY });
 
-// Generate embedding for query
 async function generateQueryEmbedding(text) {
   try {
     const response = await cohere.embed({
       model: "embed-english-v3.0",
       texts: [text],
-      inputType: "search_query", // Different from document embedding
+      inputType: "search_query", 
     });
     return response.embeddings[0];
   } catch (err) {
@@ -31,7 +29,6 @@ async function generateQueryEmbedding(text) {
   }
 }
 
-// Search vector database
 async function searchVectorDB(queryEmbedding, topK = 3) {
   try {
     const searchResults = await index.query({
@@ -58,7 +55,7 @@ async function generateRAGAnswer(query, relevantDocs) {
     .join("\n\n");
 
   try {
-    console.log("🤖 Using Cohere Chat API for generation...");
+    console.log("Using Cohere Chat API for generation...");
     
     const response = await cohere.chat({
       model: "command-a-03-2025",
@@ -79,7 +76,7 @@ Instructions:
       temperature: 0.2,
     });
 
-    console.log("✅ Chat API response received successfully");
+    console.log("Chat API response received successfully");
     return response.text?.trim() || "I'm sorry, I couldn't generate a response at this time.";
   } catch (err) {
     console.error("Generation error:", err);
@@ -88,7 +85,6 @@ Instructions:
   }
 }
 
-// Enhanced intent detection (optional - can still be useful for routing)
 function detectIntent(query) {
   const lower = query.toLowerCase();
   if (lower.includes("return") || lower.includes("refund")) return "returns";
@@ -99,7 +95,6 @@ function detectIntent(query) {
   return "general";
 }
 
-// Ping route
 app.get("/ping", (req, res) => {
   res.json({ 
     message: "RAGinikanth server running!", 
@@ -108,7 +103,6 @@ app.get("/ping", (req, res) => {
   });
 });
 
-// Enhanced /ask endpoint with full RAG implementation
 app.post("/ask", async (req, res) => {
   const startTime = Date.now();
   
@@ -139,13 +133,11 @@ app.post("/ask", async (req, res) => {
     }
 
     // Step 2: Search vector database - cast wider net for FAQ coverage
-    const relevantDocs = await searchVectorDB(queryEmbedding, 8); // Increased to get more potential matches
-    console.log(`📚 Found ${relevantDocs.length} relevant documents`);
+    const relevantDocs = await searchVectorDB(queryEmbedding, 8); 
+    console.log(`Found ${relevantDocs.length} relevant documents`);
 
-    // Use all relevant docs found (no filtering by score)
-    // This ensures we can answer ANY question from FAQ regardless of similarity score
-    const docsToUse = relevantDocs.slice(0, 5); // Use top 5 matches for better coverage
-    console.log(`📋 Using top ${docsToUse.length} documents for context`);
+    const docsToUse = relevantDocs.slice(0, 5); 
+    console.log(`Using top ${docsToUse.length} documents for context`);
 
     // Step 3: Generate answer using RAG
     const answer = await generateRAGAnswer(trimmedQuery, docsToUse);
@@ -169,7 +161,7 @@ app.post("/ask", async (req, res) => {
       }
     };
 
-    console.log(`✅ Query processed successfully in ${responseTime}ms`);
+    console.log(`Query processed successfully in ${responseTime}ms`);
     res.json(response);
 
   } catch (err) {
@@ -186,10 +178,8 @@ app.post("/ask", async (req, res) => {
   }
 });
 
-// Health check endpoint with more details
 app.get("/health", async (req, res) => {
   try {
-    // Test Pinecone connection
     const indexStats = await index.describeIndexStats();
     
     res.json({
@@ -215,7 +205,6 @@ app.get("/health", async (req, res) => {
   }
 });
 
-// Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully');
   process.exit(0);
@@ -227,9 +216,9 @@ process.on('SIGINT', () => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 RAGinikanth server running at http://localhost:${PORT}`);
-  console.log(`📊 Health check available at http://localhost:${PORT}/health`);
-  console.log(`🔧 Using Cohere Chat API (new version)`);
+  console.log(`RAGinikanth server running at http://localhost:${PORT}`);
+  console.log(`Health check available at http://localhost:${PORT}/health`);
+  console.log(`Using Cohere Chat API (new version)`);
 });
 
 export default app;
