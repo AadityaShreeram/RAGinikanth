@@ -42,14 +42,11 @@ async function searchVectorDB(queryEmbedding, topK = 3) {
     return [];
   }
 }
-
-// Generate answer using RAG with NEW CHAT API
 async function generateRAGAnswer(query, relevantDocs) {
   if (!relevantDocs.length) {
     return "I apologize, but I couldn't find relevant information in our FAQ to answer your question. Please contact our support team for personalized assistance.";
   }
 
-  // Prepare context from retrieved documents
   const context = relevantDocs
     .map((doc, idx) => `Document ${idx + 1}: ${doc.metadata.text}`)
     .join("\n\n");
@@ -122,7 +119,7 @@ app.post("/ask", async (req, res) => {
       });
     }
 
-    console.log(`🔍 Processing query: "${trimmedQuery}"`);
+    console.log(`Processing query: "${trimmedQuery}"`);
 
     // Step 1: Generate query embedding
     const queryEmbedding = await generateQueryEmbedding(trimmedQuery);
@@ -132,7 +129,8 @@ app.post("/ask", async (req, res) => {
       });
     }
 
-    // Step 2: Search vector database - cast wider net for FAQ coverage
+
+    // Step 2: Search vector database
     const relevantDocs = await searchVectorDB(queryEmbedding, 8); 
     console.log(`Found ${relevantDocs.length} relevant documents`);
 
