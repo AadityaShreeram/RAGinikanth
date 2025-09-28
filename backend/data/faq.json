@@ -1,0 +1,52 @@
+[
+  {
+    "id": "faq1",
+    "title": "Order Status",
+    "content": "How do I check my order status? You can check your order status by logging into your account and navigating to 'My Orders'. The system updates the status in real-time. Can I cancel an order? Orders can be cancelled within 2 hours of placement."
+  },
+  {
+    "id": "faq2",
+    "title": "Returns and Refunds",
+    "content": "What is the return policy? You can return most items within 30 days of delivery. How do I request a refund? Initiate a refund through your account portal, and it will be processed within 5-7 business days. Are there any items that cannot be returned? Yes, perishable goods and personalized items cannot be returned."
+  },
+  {
+    "id": "faq3",
+    "title": "Shipping Information",
+    "content": "What are the shipping options? We offer standard, express, and overnight shipping. How long does shipping take? Standard shipping takes 5-7 business days, express 2-3 business days. Can I track my shipment? Yes, tracking is available via your order page."
+  },
+  {
+    "id": "faq4",
+    "title": "Payment Options",
+    "content": "What payment methods are accepted? We accept credit/debit cards, net banking, UPI, and digital wallets. Can I pay using multiple methods? Currently, split payments are not supported. Is it safe to store my payment info? Yes, we use industry-standard encryption for all transactions."
+  },
+  {
+    "id": "faq5",
+    "title": "Account Management",
+    "content": "How do I reset my password? Click 'Forgot Password' and follow the instructions. How can I delete my account? Contact support to request account deletion. Can I update my email or phone number? Yes, navigate to 'Profile Settings' and update your contact info."
+  },
+  {
+    "id": "faq6",
+    "title": "Product Information",
+    "content": "Where can I find product manuals? Manuals are available under the product details section. Are there warranties on products? Most products come with a one-year warranty. How do I check if a product is in stock? Stock status is displayed on the product page."
+  },
+  {
+    "id": "faq7",
+    "title": "Technical Support",
+    "content": "How do I contact support? Use the 'Help & Support' page or chat with our bot. What is the response time? Typically within 24 hours. Do you offer troubleshooting guides? Yes, guides are available for most common issues online."
+  },
+  {
+    "id": "faq8",
+    "title": "Promotions and Discounts",
+    "content": "How do I apply a promo code? Enter the code at checkout. Are promo codes stackable? No, only one promo code can be applied per order. How do I know about new offers? Subscribe to our newsletter or follow our social media."
+  },
+  {
+    "id": "faq9",
+    "title": "International Orders",
+    "content": "Do you ship internationally? Yes, we ship to select countries. Are there additional charges? Customs duties and taxes may apply. How long does international shipping take? Usually 10-20 business days depending on the destination."
+  },
+  {
+    "id": "faq10",
+    "title": "Returns for Damaged Products",
+    "content": "What if I receive a damaged product? Contact support immediately with photos. Can I exchange it? Yes, we will replace damaged items at no extra cost. How fast is the replacement? Usually within 5-7 business days."
+  }
+]
