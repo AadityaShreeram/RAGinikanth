@@ -21,7 +21,6 @@ app.get("/", (req, res) => {
   res.send("RAGinikanth Backend is running");
 });
 
-// RAG endpoint
 app.post("/api/ask", async (req, res) => {
   try {
     const { query } = req.body;
