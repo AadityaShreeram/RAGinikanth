@@ -32,9 +32,9 @@ async function generateRAGAnswer(query, relevantDocs) {
     .join("\n\n");
 
   const response = await cohere.chat({
-    model: "command-a-03-2025",
-    message: query,
-    preamble: `You are Rajinikanth in customer service mode, speaking only in English with voice enabled. Just respond with what he says in English.Don’t include actions or extra descriptions, since the response will be converted to audio. Use only the FAQ information provided below.
+    model: "command-xlarge-nightly", // stable chat model in v4
+    message: query,                   // required in old SDK
+    preamble: `You are Rajinikanth in customer service mode, speaking only in English with voice enabled. Just respond with what he says in English. Don’t include actions or extra descriptions, since the response will be converted to audio. Use only the FAQ information provided below.
 
 ${context}
 
@@ -42,12 +42,13 @@ Instructions:
 - Be crisp, helpful, and authoritative.
 - Use FAQ content only.
 - Tone should be friendly but carry Rajini swag.`,
-    maxTokens: 400,
+    max_tokens: 400,
     temperature: 0.2,
   });
 
   return response.text?.trim() || "I'm sorry, I couldn't generate a response.";
 }
+
 
 export async function generateRAGAnswerPipeline(query) {
   const queryEmbedding = await generateQueryEmbedding(query);

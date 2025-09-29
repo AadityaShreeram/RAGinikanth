@@ -1,10 +1,29 @@
 import express from "express";
 import fetch from "node-fetch";
 import getMP3Duration from "get-mp3-duration";
+import multer from "multer";
+import fs from "fs";
+import FormData from "form-data";
 import { generateRAGAnswerPipeline } from "./ragService.js";
+import { exec } from "child_process";
+import path from "path";
 
 const voiceRouter = express.Router();
+const upload = multer({ dest: "uploads/" });
 
+function convertToMp3(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    const cmd = `ffmpeg -y -i "${inputPath}" -vn -ar 44100 -ac 2 -b:a 192k "${outputPath}"`;
+    exec(cmd, (err, stdout, stderr) => {
+      if (err) {
+        console.error("FFmpeg conversion error:", stderr);
+        reject(err);
+      } else {
+        resolve(outputPath);
+      }
+    });
+  });
+}
 async function generateVoiceResponse(text) {
   try {
     console.log("Generating voice for text:", text.substring(0, 50) + "...");
@@ -12,7 +31,7 @@ async function generateVoiceResponse(text) {
     const response = await fetch("https://api.cartesia.ai/tts/bytes", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.CARTESIA_API_KEY}`,
+        Authorization: `Bearer ${process.env.CARTESIA_API_KEY}`,
         "Content-Type": "application/json",
         "Cartesia-Version": "2025-04-16",
       },
@@ -40,11 +59,7 @@ async function generateVoiceResponse(text) {
 
     const buffer = await response.arrayBuffer();
     const base64Audio = Buffer.from(buffer).toString("base64");
-    console.log(
-      "Voice generation successful, audio size:",
-      buffer.byteLength,
-      "bytes"
-    );
+    console.log("Voice generation successful, audio size:", buffer.byteLength, "bytes");
 
     return base64Audio;
   } catch (err) {
@@ -76,6 +91,36 @@ async function generateVoiceWithSubtitles(text) {
   return { audioBase64, subtitles, durationSec };
 }
 
+async function transcribeAudioWithGroq(filePath) {
+  try {
+    const formData = new FormData();
+    formData.append("file", fs.createReadStream(filePath));
+    formData.append("model", "whisper-large-v3-turbo");
+    formData.append("language", "en");
+    formData.append("response_format", "json");
+
+    const response = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        ...formData.getHeaders(),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(`Groq STT error ${response.status}:`, errText);
+      throw new Error(`Groq STT error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.text;
+  } catch (err) {
+    console.error("Groq transcription error:", err);
+    throw err;
+  }
+}
 
 voiceRouter.post("/speak", async (req, res) => {
   try {
@@ -100,10 +145,8 @@ voiceRouter.post("/speak", async (req, res) => {
   }
 });
 
-
 voiceRouter.post("/ask", async (req, res) => {
   const startTime = Date.now();
-
   try {
     const { query } = req.body;
     if (!query || typeof query !== "string") {
@@ -112,10 +155,7 @@ voiceRouter.post("/ask", async (req, res) => {
 
     console.log("Voice RAG request:", query);
 
-    // Step 1: Generate RAG answer
     const { answer, metadata } = await generateRAGAnswerPipeline(query);
-
-    // Step 2: Generate TTS + sentence-level subtitles
     const result = await generateVoiceWithSubtitles(answer);
 
     res.json({
@@ -130,9 +170,7 @@ voiceRouter.post("/ask", async (req, res) => {
       },
     });
 
-    console.log(
-      `Voice RAG completed in ${Date.now() - startTime}ms`
-    );
+    console.log(`Voice RAG completed in ${Date.now() - startTime}ms`);
   } catch (err) {
     console.error("Error in /ask:", err);
     res.status(500).json({
@@ -144,7 +182,6 @@ voiceRouter.post("/ask", async (req, res) => {
     });
   }
 });
-
 
 voiceRouter.post("/tts", async (req, res) => {
   try {
@@ -166,38 +203,47 @@ voiceRouter.post("/tts", async (req, res) => {
   }
 });
 
-
-voiceRouter.post("/stt", async (req, res) => {
+voiceRouter.post("/stt", upload.single("file"), async (req, res) => {
   try {
-    const { audio, format = "mp3" } = req.body;
-    if (!audio) return res.status(400).json({ error: "Audio data required" });
+    if (!req.file) {
+      return res.status(400).json({ error: "No audio file uploaded" });
+    }
 
-    console.log(" STT request received, format:", format);
+    const inputPath = req.file.path;
+    const outputPath = path.join("uploads", `${Date.now()}.mp3`);
 
-    const mockTranscript =
-      "Hello, this is a mock transcript. Please integrate a real STT service.";
+    console.log("🎤 Received:", req.file.originalname, "-> converting to mp3...");
+
+    await convertToMp3(inputPath, outputPath);
+
+    const transcript = await transcribeAudioWithGroq(outputPath);
+
+    fs.unlinkSync(inputPath);
+    fs.unlinkSync(outputPath);
 
     res.json({
-      transcript: mockTranscript,
-      confidence: 0.95,
+      transcript,
       language: "en",
-      warning: "This is a mock response. Please integrate real STT service.",
+      provider: "groq",
+      model: "whisper-large-v3-turbo",
     });
   } catch (err) {
     console.error("Error in /stt:", err);
-    res.status(500).json({ error: "Internal server error" });
+    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    res.status(500).json({ error: "Failed to transcribe audio", details: err.message });
   }
 });
 
 voiceRouter.get("/health", async (req, res) => {
   try {
     const hasCartesiaKey = !!process.env.CARTESIA_API_KEY;
+    const hasGroqKey = !!process.env.GROQ_API_KEY;
 
     res.json({
       status: "healthy",
       services: {
         tts: hasCartesiaKey ? "configured" : "missing_api_key",
-        stt: "mock_implementation",
+        stt: hasGroqKey ? "groq_enabled" : "missing_api_key",
       },
       timestamp: new Date().toISOString(),
     });
