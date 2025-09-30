@@ -9,6 +9,7 @@ const blobToBase64 = (blob) => new Promise((resolve, reject) => {
   reader.readAsDataURL(blob);
 });
 
+const API_BASE = import.meta.env.VITE_BACKEND_URL;
 function App() {
   const [query, setQuery] = useState("");
   const [answer, setAnswer] = useState("");
@@ -33,9 +34,7 @@ function App() {
   useEffect(() => { isConversationActiveRef.current = isConversationActive; }, [isConversationActive]);
   const openWs = () => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) return wsRef.current;
-const ws = new WebSocket(
-  `${import.meta.env.VITE_BACKEND_URL.replace(/^http/, "ws")}/ws/voice`
-);
+       const ws = new WebSocket(`${API_BASE.replace(/^http/, "ws")}/ws/voice`);
     ws.binaryType = "arraybuffer";
     ws.onopen = () => {
       console.log("WS open");
