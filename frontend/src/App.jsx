@@ -33,7 +33,9 @@ function App() {
   useEffect(() => { isConversationActiveRef.current = isConversationActive; }, [isConversationActive]);
   const openWs = () => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) return wsRef.current;
-const ws = new WebSocket("ws://localhost:5000/ws/voice");
+const ws = new WebSocket(
+  `${import.meta.env.VITE_BACKEND_URL.replace(/^http/, "ws")}/ws/voice`
+);
     ws.binaryType = "arraybuffer";
     ws.onopen = () => {
       console.log("WS open");
@@ -196,7 +198,7 @@ const mediaRecorder = new MediaRecorder(stream, options);
     setError("");
 
     try {
-      const res = await fetch("/api/voice/ask", {
+      const res = await fetch(`${API_BASE}/api/voice/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: questionText }),
