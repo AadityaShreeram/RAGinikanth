@@ -337,26 +337,6 @@ function App() {
             </div>
           )}
         </div>
-
-        {isConversationActive && (
-          <div className="status-indicator">
-            {conversationState === "listening" && (
-              <span className="status listening">
-                <span className="pulse"></span>Listening...
-              </span>
-            )}
-            {conversationState === "processing" && (
-              <span className="status processing">
-                <span className="spinner"></span>Thinking...
-              </span>
-            )}
-            {conversationState === "speaking" && (
-              <span className="status speaking">
-                <span className="sound-wave"></span>Speaking...
-              </span>
-            )}
-          </div>
-        )}
       </div>
 
       <div className="transcription-container">
@@ -365,13 +345,6 @@ function App() {
         </div>
 
         <div className="button-group center-buttons">
-          <button
-            onClick={handleVoiceInput}
-            disabled={loading || isConversationActive}
-            className={isListening ? "voice-btn recording" : "voice-btn"}
-          >
-            {isListening ? "⏹️ Stop Speaking" : "🎤Ask Something"}
-          </button>
 
           <button onClick={clearAll} disabled={isConversationActive} className="clear-btn">
             🧹 Clear
