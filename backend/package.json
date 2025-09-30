@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@deepgram/sdk": "^4.11.2",
     "@pinecone-database/pinecone": "^6.1.2",
     "cohere-ai": "^7.19.0",
     "cors": "^2.8.5",
@@ -20,6 +21,8 @@
     "get-mp3-duration": "^1.0.0",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
-    "openai": "^5.23.1"
+    "openai": "^5.23.1",
+    "uuid": "^13.0.0",
+    "ws": "^8.18.3"
   }
 }
