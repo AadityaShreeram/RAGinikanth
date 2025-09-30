@@ -11,7 +11,7 @@ export default function SubtitleDisplay({ subtitles, currentSubtitleIndex }) {
   }, [currentSubtitleIndex]);
 
   if (!subtitles || subtitles.length === 0) {
-    return <div className="mt-4 text-gray-400 italic text-center">No subtitles</div>;
+    return <div className="mt-4 text-gray-400 italic text-center">No response</div>;
   }
 
   return (
